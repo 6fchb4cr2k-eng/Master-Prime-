@@ -3759,27 +3759,21 @@ function odSaveFolder(){
 }
 
 function odInitMSAL(){
-  const cid = odClientId();
-  if(!cid || typeof msal === 'undefined') return false;
+  if(typeof msal === 'undefined') return false;
   try{
     OD.msalInstance = new msal.PublicClientApplication({
       auth: {
-        clientId: cid,
+        clientId: 'dc7a7caa-a794-4fc1-85b6-10248a9cfec8',
         authority: 'https://login.microsoftonline.com/common',
-        redirectUri: OD_REDIRECT,
-        postLogoutRedirectUri: OD_REDIRECT,
+        redirectUri: 'https://6fchb4cr2k-eng.github.io/Master-Prime-',
+        postLogoutRedirectUri: 'https://6fchb4cr2k-eng.github.io/Master-Prime-',
         navigateToLoginRequestUrl: false,
       },
       cache: {
         cacheLocation: 'localStorage',
         storeAuthStateInCookie: true,
       },
-      system: {
-        windowHashTimeout: 9000,
-        iframeHashTimeout: 9000,
-        loadFrameTimeout: 9000,
-        allowNativeBroker: false,
-      }
+      system: { allowNativeBroker: false }
     });
     return true;
   }catch(e){ console.error('MSAL init error:', e); return false; }
@@ -4343,6 +4337,19 @@ async function udocsUploadAll(btn){
 }
 
 // INIT
+// Clear any bad Client ID / MSAL state from localStorage
+try{
+  // Remove any URL accidentally stored as Client ID
+  const storedId = localStorage.getItem('mp_od_clientid');
+  if(storedId && storedId.startsWith('http')){
+    localStorage.removeItem('mp_od_clientid');
+  }
+  // Remove any stale MSAL token cache that might have wrong clientId
+  Object.keys(localStorage).filter(k=>
+    k.startsWith('msal.') && k.includes('github.io')
+  ).forEach(k=>localStorage.removeItem(k));
+}catch(e){}
+
 initFileInputs();
 if(apiKey())document.getElementById('api-hdr-btn').classList.add('configured');
 arqLoad();
