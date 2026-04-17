@@ -4337,17 +4337,30 @@ async function udocsUploadAll(btn){
 }
 
 // INIT
-// Clear any bad Client ID / MSAL state from localStorage
+// Auto-cleanup: clear ALL MSAL state and bad localStorage on every load
+// This ensures no stale Client ID or token cache causes auth errors
 try{
-  // Remove any URL accidentally stored as Client ID
+  const APP_VERSION = 'v3.1'; // bump this to force full reset
+  const savedVersion = localStorage.getItem('mp_app_version');
+  
+  if(savedVersion !== APP_VERSION){
+    // New version — clear ALL MSAL keys and bad IDs
+    const keysToRemove = Object.keys(localStorage).filter(k =>
+      k.startsWith('msal.') ||
+      k.startsWith('msal-') ||
+      k === 'mp_od_clientid' ||  // always remove — now hardcoded
+      k === 'od_redirect_pending'
+    );
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('mp_app_version', APP_VERSION);
+    console.log('[MasterPrime] Cleared', keysToRemove.length, 'stale localStorage keys for version', APP_VERSION);
+  }
+  
+  // Also always remove any URL accidentally stored as Client ID
   const storedId = localStorage.getItem('mp_od_clientid');
-  if(storedId && storedId.startsWith('http')){
+  if(storedId && (storedId.startsWith('http') || storedId.length > 40)){
     localStorage.removeItem('mp_od_clientid');
   }
-  // Remove any stale MSAL token cache that might have wrong clientId
-  Object.keys(localStorage).filter(k=>
-    k.startsWith('msal.') && k.includes('github.io')
-  ).forEach(k=>localStorage.removeItem(k));
 }catch(e){}
 
 initFileInputs();
