@@ -3730,8 +3730,12 @@ const GRAPH = 'https://graph.microsoft.com/v1.0';
 // Fixed redirect URI - must match Azure App Registration exactly
 const OD_REDIRECT = 'https://6fchb4cr2k-eng.github.io/Master-Prime-';
 
-function odClientId(){ return localStorage.getItem('mp_od_clientid')||''; }
-function odFolder(){ return localStorage.getItem('mp_od_folder')||'Master Prime/Contabilidade'; }
+// Azure App ID — hardcoded as default, user can override via UI
+const OD_DEFAULT_CLIENT_ID = 'dc7a7caa-a794-4fc1-85b6-10248a9cfec8';
+const OD_DEFAULT_FOLDER    = 'Master Prime/Contabilidade';
+
+function odClientId(){ return localStorage.getItem('mp_od_clientid')||OD_DEFAULT_CLIENT_ID; }
+function odFolder(){   return localStorage.getItem('mp_od_folder')||OD_DEFAULT_FOLDER; }
 
 function odSaveClientId(){
   const el = document.getElementById('od-clientid-inp');
@@ -3969,6 +3973,7 @@ function toggleOD(){
   if(ap&&ap.classList.contains('open'))ap.classList.remove('open');
   if(p) p.classList.toggle('open');
   const cid=document.getElementById('od-clientid-inp');
+  if(cid){ if(!cid.value) cid.value=odClientId(); }
   if(cid&&odClientId())cid.value=odClientId();
   const fi=document.getElementById('od-folder-inp');
   if(fi)fi.value=odFolder();
